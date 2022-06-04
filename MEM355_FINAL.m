@@ -40,15 +40,15 @@ Closed_A = a - b*L;
 char(1,:)
 closed_sys = ss(Closed_A,b(:,1),eye(4),[0 0 0 0]');
 [y,t,x]=step(closed_sys,400);
-%[y2,t2,x2]=step(sys,400)
+[y2,t2,x2]=step(sys,400)
 D=rad2deg(x)
-%D2=rad2deg(x2)
+D2=rad2deg(x2)
 plot(t,D(:,1)), title('step response with controller'),ylabel('torso position (degrees)'); grid
-%hold on
-%plot(t2,D2(:,1))
-%hold off
-%subplot(4,1,1), plot(t,D(:,1)), title('step thrust response'),ylabel('torso position (deg)')
-%subplot(4,1,2), plot(t,D(:,2)),ylabel('leg position (deg)')
-%subplot(4,1,3), plot(t,D(:,3)),ylabel('torso velocity (deg/sec)')
-%subplot(4,1,4), plot(t,D(:,4)),ylabel('leg velocity (deg/sec)'),
-%xlabel('time(sec)')
+hold on
+plot(t2,D2(:,1))
+hold off
+subplot(4,1,1), plot(t,D(:,1)), title('step thrust response'),ylabel('torso position (deg)')
+subplot(4,1,2), plot(t,D(:,2)),ylabel('leg position (deg)')
+subplot(4,1,3), plot(t,D(:,3)),ylabel('torso velocity (deg/sec)')
+subplot(4,1,4), plot(t,D(:,4)),ylabel('leg velocity (deg/sec)'),
+xlabel('time(sec)')
