@@ -62,10 +62,51 @@ G = place(A, B, lambda);
 
 % instead of A-GB, it's A-FM, where F is a gain matrix like G but for M
 % instead of B
-F = place(A.', M.', 3 * lambda).';
+F = place(A.', M.', (3 * real(lambda) + imag(lambda)*1i)).';
+
+% estimator error as an LTI system
+estimator_error = ss((A - F*M), zeros(4,1), eye(4), zeros(1,1));
+
+% arbitrary initial conditions, with closed loop (8 state) companion
+inits = [deg2rad(5), deg2rad(10), deg2rad(3), deg2rad(4)];
+inits_cl = [inits inits];
+
+[y_e, t_e] = initial(estimator_error, inits);
+
+figure()
+hold on
+grid on
+
+subplot(2,2,1)
+plot(t_e, rad2deg(y_e(:,1)))
+title("Torso Angle $\theta$", 'Interpreter', 'latex')
+xlabel("Time(s)")
+ylabel("Angle (deg)")
+
+subplot(2,2,2)
+plot(t_e, rad2deg(y_e(:,2)))
+title("Hip Angle $\psi$", 'Interpreter', 'latex')
+xlabel("Time(s)")
+ylabel("Angle (deg)")
+
+subplot(2,2,3)
+plot(t_e, rad2deg(y_e(:,3)))
+title("Torso Velocity $\dot{\theta}$", 'Interpreter', 'latex')
+xlabel("Time(s)")
+ylabel("Angular Velocity (deg/s)")
+
+subplot(2,2,4)
+plot(t_e, rad2deg(y_e(:,4)))
+title("Hip Velocity $\dot{\psi}$", 'Interpreter', 'latex')
+xlabel("Time(s)")
+ylabel("Angular Velocity (deg/s)")
+
+sgtitle("Estimator Error, All States")
+hold off
 
 %% 4c: closed loop system and set-point control
 
+% closed-loop matrices for the ss() commands
 A_cl = [A -B*G;
     F*M A-B*G-F*M];
 
@@ -75,3 +116,56 @@ B_cl = [B;
 C_cl = [M zeros(1,4)];
 
 sys_cl = ss(A_cl, B_cl, C_cl, zeros(1,1));
+
+% set-point controller (sorta?)
+opt = stepDataOptions('StepAmplitude', .1413);
+
+
+%% 4d: zero initial conditions, estimator only
+
+% is this just totally redundant with 5?
+
+%% 5: zero initial conditions, system
+step(sys_cl, opt)
+
+%% 6: look at all of the outputs
+
+M_full = [eye(4) zeros(4); zeros(4,8)];
+
+sys_full = ss(A_cl, B_cl, M_full, zeros(1,1));
+
+[y, t] = step(sys_full, opt);
+
+figure()
+hold on
+
+subplot(2,2,1)
+plot(t, rad2deg(y(:,1)))
+title("Torso Angle $\theta$", 'Interpreter', 'latex')
+xlabel("Time(s)")
+ylabel("Angle (deg)")
+grid on
+
+subplot(2,2,2)
+plot(t, rad2deg(y(:,2)))
+title("Hip Angle $\psi$", 'Interpreter', 'latex')
+xlabel("Time(s)")
+ylabel("Angle (deg)")
+grid on
+
+subplot(2,2,3)
+plot(t, rad2deg(y(:,3)))
+title("Torso Velocity $\dot{\theta}$", 'Interpreter', 'latex')
+xlabel("Time(s)")
+ylabel("Angular Velocity (deg/s)")
+grid on
+
+subplot(2,2,4)
+plot(t, rad2deg(y(:,4)))
+title("Hip Velocity $\dot{\psi}$", 'Interpreter', 'latex')
+xlabel("Time(s)")
+ylabel("Angular Velocity (deg/s)")
+grid on
+
+sgtitle("System Response, All States")
+hold off
